@@ -544,7 +544,7 @@ class OCR:
                                               local_dir=os.path.join(get_project_base_directory(), "rag/res/deepdoc"),
                                               local_dir_use_symlinks=False)
                 
-                if PARALLEL_DEVICES is not None:
+                if False:  #PARALLEL_DEVICES is not None:
                     assert PARALLEL_DEVICES > 0, "Number of devices must be >= 1"
                     self.text_detector = []
                     self.text_recognizer = []

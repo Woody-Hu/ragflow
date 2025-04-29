@@ -21,9 +21,9 @@ import time
 import os
 
 import copy
-from opensearchpy import OpenSearch, NotFoundError
-from opensearchpy import UpdateByQuery, Q, Search, Index
-from opensearchpy import ConnectionTimeout
+#from opensearchpy import OpenSearch, NotFoundError
+#from opensearchpy import UpdateByQuery, Q, Search, Index
+#from opensearchpy import ConnectionTimeout
 from rag import settings
 from rag.settings import TAG_FLD, PAGERANK_FLD
 from rag.utils import singleton

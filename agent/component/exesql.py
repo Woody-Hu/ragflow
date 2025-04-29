@@ -21,7 +21,7 @@ import pandas as pd
 import pymysql
 import psycopg2
 from agent.component import GenerateParam, Generate
-import pyodbc
+#import pyodbc
 import logging
 
 

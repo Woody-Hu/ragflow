@@ -60,7 +60,7 @@ export default function Dataset() {
   });
 
   return (
-    <section className="p-8">
+    <section className="p-5">
       <ListFilterBar
         title="Dataset"
         onSearchChange={handleInputChange}
@@ -71,7 +71,7 @@ export default function Dataset() {
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={'tertiary'} size={'sm'}>
+            <Button size={'sm'}>
               <Upload />
               {t('knowledgeDetails.addFile')}
             </Button>

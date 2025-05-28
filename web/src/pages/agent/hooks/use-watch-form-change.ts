@@ -5,7 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Operator } from '../constant';
 import useGraphStore from '../store';
-import { buildCategorizeObjectFromList } from '../utils';
+import { buildCategorizeObjectFromList, convertToStringArray } from '../utils';
 
 export const useHandleFormValuesChange = (
   operatorName: Operator,
@@ -39,7 +39,6 @@ export const useHandleFormValuesChange = (
 
   useEffect(() => {
     const subscription = form?.watch((value, { name, type, values }) => {
-      console.log('🚀 ~ subscription ~ value:', value);
       if (id && name) {
         console.log(
           '🚀 ~ useEffect ~ value:',
@@ -84,8 +83,16 @@ export const useHandleFormValuesChange = (
             script: CodeTemplateStrMap[value.lang as ProgrammingLanguage],
           };
         }
+
+        if (operatorName === Operator.Message) {
+          nextValues = {
+            ...value,
+            content: convertToStringArray(value.content),
+          };
+        }
+
         // Manually triggered form updates are synchronized to the canvas
-        if (type) {
+        if (form.formState.isDirty) {
           // run(id, nextValues);
           updateNodeForm(id, nextValues);
         }

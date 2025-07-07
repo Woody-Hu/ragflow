@@ -12,15 +12,24 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RAGFlowSelect } from '@/components/ui/select';
-import { CodeTemplateStrMap, ProgrammingLanguage } from '@/constants/agent';
-import { ICodeForm } from '@/interfaces/database/flow';
-import { useEffect } from 'react';
+import { ProgrammingLanguage } from '@/constants/agent';
+import { ICodeForm } from '@/interfaces/database/agent';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { buildOutputList } from '../../utils/build-output-list';
+import { Output } from '../components/output';
 import {
   DynamicInputVariable,
   TypeOptions,
   VariableTitle,
 } from './next-variable';
+import { FormSchema, FormSchemaType } from './schema';
+import { useValues } from './use-values';
+import {
+  useHandleLanguageChange,
+  useWatchFormChange,
+} from './use-watch-change';
 
 loader.config({ paths: { vs: '/vs' } });
 
@@ -29,17 +38,21 @@ const options = [
   ProgrammingLanguage.Javascript,
 ].map((x) => ({ value: x, label: x }));
 
-const CodeForm = ({ form, node }: INextOperatorForm) => {
+const DynamicFieldName = 'outputs';
+
+const CodeForm = ({ node }: INextOperatorForm) => {
   const formData = node?.data.form as ICodeForm;
   const { t } = useTranslation();
+  const values = useValues(node);
 
-  useEffect(() => {
-    // TODO: Direct operation zustand is more elegant
-    form?.setValue(
-      'script',
-      CodeTemplateStrMap[formData.lang as ProgrammingLanguage],
-    );
-  }, [form, formData.lang]);
+  const form = useForm<FormSchemaType>({
+    defaultValues: values,
+    resolver: zodResolver(FormSchema),
+  });
+
+  useWatchFormChange(node?.id, form);
+
+  const handleLanguageChange = useHandleLanguageChange(node?.id, form);
 
   return (
     <Form {...form}>
@@ -52,6 +65,7 @@ const CodeForm = ({ form, node }: INextOperatorForm) => {
         <DynamicInputVariable
           node={node}
           title={t('flow.input')}
+          isOutputs={false}
         ></DynamicInputVariable>
         <FormField
           control={form.control}
@@ -66,7 +80,14 @@ const CodeForm = ({ form, node }: INextOperatorForm) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <RAGFlowSelect {...field} options={options} />
+                        <RAGFlowSelect
+                          {...field}
+                          onChange={(val) => {
+                            field.onChange(val);
+                            handleLanguageChange(val);
+                          }}
+                          options={options}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -94,7 +115,8 @@ const CodeForm = ({ form, node }: INextOperatorForm) => {
           <DynamicInputVariable
             node={node}
             title={'Return Values'}
-            name={'return'}
+            name={DynamicFieldName}
+            isOutputs
           ></DynamicInputVariable>
         ) : (
           <div>
@@ -102,7 +124,7 @@ const CodeForm = ({ form, node }: INextOperatorForm) => {
             <FormContainer className="space-y-5">
               <FormField
                 control={form.control}
-                name={'return.name'}
+                name={`${DynamicFieldName}.name`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Name</FormLabel>
@@ -118,7 +140,7 @@ const CodeForm = ({ form, node }: INextOperatorForm) => {
               />
               <FormField
                 control={form.control}
-                name={`return.component_id`}
+                name={`${DynamicFieldName}.type`}
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Type</FormLabel>
@@ -137,6 +159,9 @@ const CodeForm = ({ form, node }: INextOperatorForm) => {
           </div>
         )}
       </form>
+      <div className="p-5">
+        <Output list={buildOutputList(formData.outputs)}></Output>
+      </div>
     </Form>
   );
 };

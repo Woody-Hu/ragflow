@@ -638,7 +638,7 @@ class TestDatasetCreate:
         res = create_dataset(HttpApiAuth, payload)
         assert res["code"] == 0, res
         assert res["data"]["parser_config"] == {
-            "chunk_token_num": 128,
+            "chunk_token_num": 512,
             "delimiter": r"\n",
             "html4excel": False,
             "layout_recognize": "DeepDOC",
@@ -651,7 +651,7 @@ class TestDatasetCreate:
         res = create_dataset(HttpApiAuth, payload)
         assert res["code"] == 0, res
         assert res["data"]["parser_config"] == {
-            "chunk_token_num": 128,
+            "chunk_token_num": 512,
             "delimiter": r"\n",
             "html4excel": False,
             "layout_recognize": "DeepDOC",
@@ -664,7 +664,7 @@ class TestDatasetCreate:
         res = create_dataset(HttpApiAuth, payload)
         assert res["code"] == 0, res
         assert res["data"]["parser_config"] == {
-            "chunk_token_num": 128,
+            "chunk_token_num": 512,
             "delimiter": "\\n",
             "html4excel": False,
             "layout_recognize": "DeepDOC",

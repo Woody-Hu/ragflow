@@ -78,6 +78,7 @@ export default {
   upload_and_parse: `${api_host}/document/upload_and_parse`,
   parse: `${api_host}/document/parse`,
   setMeta: `${api_host}/document/set_meta`,
+  get_dataset_filter: `${api_host}/document/filter`,
 
   // chat
   setDialog: `${api_host}/dialog/set`,
@@ -144,6 +145,7 @@ export default {
   getInputElements: `${api_host}/canvas/input_elements`,
   debug: `${api_host}/canvas/debug`,
   uploadCanvasFile: `${api_host}/canvas/upload`,
+  trace: `${api_host}/canvas/trace`,
 
   // mcp server
   getMcpServerList: `${api_host}/mcp_server/list`,

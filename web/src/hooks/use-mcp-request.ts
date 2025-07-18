@@ -5,14 +5,23 @@ import {
   IMcpServer,
   IMcpServerListResponse,
   IMCPTool,
+  IMCPToolRecord,
 } from '@/interfaces/database/mcp';
 import {
   IImportMcpServersRequestBody,
   ITestMcpRequestBody,
 } from '@/interfaces/request/mcp';
 import i18n from '@/locales/config';
-import mcpServerService from '@/services/mcp-server-service';
+import mcpServerService, {
+  listMcpServers,
+} from '@/services/mcp-server-service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from 'ahooks';
+import { useState } from 'react';
+import {
+  useGetPaginationWithRouter,
+  useHandleSearchChange,
+} from './logic-hooks';
 
 export const enum McpApiAction {
   ListMcpServer = 'listMcpServer',
@@ -29,17 +38,38 @@ export const enum McpApiAction {
 }
 
 export const useListMcpServer = () => {
+  const { searchString, handleInputChange } = useHandleSearchChange();
+  const { pagination, setPagination } = useGetPaginationWithRouter();
+  const debouncedSearchString = useDebounce(searchString, { wait: 500 });
+
   const { data, isFetching: loading } = useQuery<IMcpServerListResponse>({
-    queryKey: [McpApiAction.ListMcpServer],
+    queryKey: [
+      McpApiAction.ListMcpServer,
+      {
+        debouncedSearchString,
+        ...pagination,
+      },
+    ],
     initialData: { total: 0, mcp_servers: [] },
     gcTime: 0,
     queryFn: async () => {
-      const { data } = await mcpServerService.list({});
+      const { data } = await listMcpServers({
+        keywords: debouncedSearchString,
+        page_size: pagination.pageSize,
+        page: pagination.current,
+      });
       return data?.data;
     },
   });
 
-  return { data, loading };
+  return {
+    data,
+    loading,
+    handleInputChange,
+    setPagination,
+    searchString,
+    pagination: { ...pagination, total: data?.total },
+  };
 };
 
 export const useGetMcpServer = (id: string) => {
@@ -173,17 +203,19 @@ export const useExportMcpServer = () => {
 };
 
 export const useListMcpServerTools = () => {
-  const { data, isFetching: loading } = useQuery({
+  const [ids, setIds] = useState<string[]>([]);
+  const { data, isFetching: loading } = useQuery<IMCPToolRecord>({
     queryKey: [McpApiAction.ListMcpServerTools],
-    initialData: [],
+    initialData: {} as IMCPToolRecord,
     gcTime: 0,
+    enabled: ids.length > 0,
     queryFn: async () => {
-      const { data } = await mcpServerService.listTools();
-      return data?.data ?? [];
+      const { data } = await mcpServerService.listTools({ mcp_ids: ids });
+      return data?.data ?? {};
     },
   });
 
-  return { data, loading };
+  return { data, loading, setIds };
 };
 
 export const useTestMcpServer = () => {
@@ -191,12 +223,12 @@ export const useTestMcpServer = () => {
     data,
     isPending: loading,
     mutateAsync,
-  } = useMutation<IMCPTool[], Error, ITestMcpRequestBody>({
+  } = useMutation<ResponseType<IMCPTool[]>, Error, ITestMcpRequestBody>({
     mutationKey: [McpApiAction.TestMcpServer],
     mutationFn: async (params) => {
       const { data } = await mcpServerService.test(params);
 
-      return data?.data || [];
+      return data;
     },
   });
 
